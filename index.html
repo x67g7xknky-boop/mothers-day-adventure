@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A Special Mother's Day Adventure - a heartfelt pixel-art game made with love."
+    />
+    <title>A Special Mother's Day Adventure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-top: #d93bb4;
+        --bg-bottom: #4b0f4d;
+        --cream: #fff8e8;
+        --pink: #ff8fe1;
+        --rose: #e61ebd;
+        --lavender: #ffb3f1;
+        --gold: #f6cb67;
+        --gold-deep: #d89b2d;
+        --mint: #bff3db;
+        --plum: #5a1c57;
+        --shadow: rgba(28, 12, 45, 0.35);
+        --panel: rgba(255, 243, 249, 0.92);
+        --transition: 480ms ease;
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        font-family: "Press Start 2P", cursive;
+        background:
+          radial-gradient(circle at top, rgba(255, 170, 233, 0.28), transparent 28%),
+          linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+        color: var(--cream);
+        image-rendering: pixelated;
+        overscroll-behavior: none;
+      }
+
+      body {
+        cursor:
+          url("assets/cursor.png") 8 8,
+          auto;
+        overflow: hidden;
+      }
+
+      body.fallback-cursor {
+        cursor:
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' shape-rendering='crispEdges' viewBox='0 0 32 32'%3E%3Crect x='12' y='0' width='8' height='4' fill='%23ffe27a'/%3E%3Crect x='8' y='4' width='16' height='4' fill='%23ffe27a'/%3E%3Crect x='4' y='8' width='24' height='4' fill='%23ffe27a'/%3E%3Crect x='8' y='12' width='16' height='4' fill='%23ffe27a'/%3E%3Crect x='12' y='16' width='8' height='12' fill='%23ffe27a'/%3E%3Crect x='12' y='0' width='8' height='4' fill='%23fff8e8' opacity='.4'/%3E%3C/svg%3E")
+            8 4,
+          auto;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      #app {
+        position: relative;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: hidden;
+      }
+
+      .sky-layer,
+      .float-layer,
+      .confetti-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .screen {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 28px 18px calc(28px + var(--safe-bottom));
+        opacity: 0;
+        transform: scale(0.985);
+        transition:
+          opacity var(--transition),
+          transform var(--transition);
+      }
+
+      .screen.visible {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .panel {
+        width: min(100%, 1100px);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 24%),
+          var(--panel);
+        color: var(--plum);
+        border: 6px solid #fff4cf;
+        box-shadow:
+          0 0 0 6px rgba(111, 70, 130, 0.8),
+          0 24px 0 rgba(64, 29, 82, 0.4),
+          0 34px 42px rgba(10, 0, 22, 0.38);
+        padding: clamp(18px, 4vw, 34px);
+        position: relative;
+      }
+
+      .panel::before,
+      .panel::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background: var(--gold);
+        box-shadow:
+          0 0 0 4px #fff4cf,
+          0 0 0 8px rgba(111, 70, 130, 0.75);
+      }
+
+      .panel::before {
+        top: -8px;
+        left: -8px;
+      }
+
+      .panel::after {
+        right: -8px;
+        bottom: -8px;
+      }
+
+      .title-layout,
+      .split-layout,
+      .award-layout,
+      .credits-layout {
+        display: grid;
+        gap: 22px;
+        align-items: center;
+      }
+
+      .title-layout,
+      .split-layout,
+      .award-layout {
+        grid-template-columns: 1.2fr 0.95fr;
+      }
+
+      .credits-layout {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .kicker {
+        display: inline-block;
+        color: var(--gold-deep);
+        background: rgba(246, 203, 103, 0.2);
+        padding: 10px 12px;
+        margin-bottom: 14px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(1.5rem, 3.7vw, 3rem);
+        line-height: 1.35;
+      }
+
+      h2 {
+        font-size: clamp(1rem, 2.6vw, 1.6rem);
+        line-height: 1.45;
+      }
+
+      p,
+      li,
+      .counter,
+      .message,
+      .helper,
+      .timer {
+        font-size: clamp(0.62rem, 1.55vw, 0.86rem);
+        line-height: 1.8;
+      }
+
+      .copy-stack {
+        display: grid;
+        gap: 18px;
+      }
+
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .pixel-btn {
+        border: 0;
+        background: var(--rose);
+        color: var(--cream);
+        padding: 16px 20px;
+        box-shadow:
+          0 0 0 4px #fff4cf,
+          0 0 0 8px #7a4568,
+          0 8px 0 #572d49;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: transform 120ms steps(2);
+      }
+
+      .pixel-btn:hover,
+      .pixel-btn:focus-visible {
+        transform: translateY(-2px);
+        outline: none;
+      }
+
+      .pixel-btn:active {
+        transform: translateY(4px);
+        box-shadow:
+          0 0 0 4px #fff4cf,
+          0 0 0 8px #7a4568,
+          0 4px 0 #572d49;
+      }
+
+      .mom-card,
+      .portrait-stage {
+        position: relative;
+        display: grid;
+        place-items: center;
+      }
+
+      .mom-frame {
+        width: min(100%, 360px);
+        aspect-ratio: 1 / 1;
+        background:
+          linear-gradient(180deg, rgba(255, 237, 244, 0.75), rgba(255, 255, 255, 0.12)),
+          linear-gradient(180deg, #ecc6f0, #c18ad6 48%, #9060b7);
+        border: 8px solid #fff3c0;
+        box-shadow:
+          0 0 0 8px #875d9e,
+          0 18px 0 rgba(74, 37, 97, 0.45);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .mom-frame img,
+      .mom-main,
+      .mom-loose {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        image-rendering: pixelated;
+      }
+
+      .mom-fallback {
+        position: absolute;
+        inset: 0;
+        display: none;
+        place-items: center;
+        padding: 20px;
+        text-align: center;
+        color: var(--cream);
+        line-height: 1.8;
+        background:
+          radial-gradient(circle at 50% 30%, #ffdeef, transparent 24%),
+          linear-gradient(180deg, #f06dd8, #9f2a95);
+      }
+
+      .mom-frame.missing .mom-fallback {
+        display: grid;
+      }
+
+      .mom-frame.missing img {
+        display: none;
+      }
+
+      .caption {
+        color: #6d4d7d;
+      }
+
+      .continue-note {
+        color: var(--gold-deep);
+        animation: pulse 1.6s steps(2) infinite;
+      }
+
+      .hud {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+
+      .counter,
+      .timer,
+      .helper-pill {
+        background: rgba(255, 255, 255, 0.68);
+        padding: 12px 14px;
+        box-shadow: 0 0 0 4px rgba(132, 89, 154, 0.8);
+      }
+
+      .scene-card {
+        background: linear-gradient(180deg, #ffe8f2, #fff8eb);
+        border: 6px solid #fff4cf;
+        box-shadow: 0 0 0 6px rgba(132, 89, 154, 0.75);
+        padding: 16px;
+      }
+
+      .room-scene {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        min-height: 260px;
+        background:
+          linear-gradient(180deg, #ffddea 0 54%, #c88e5f 54% 100%);
+        overflow: hidden;
+      }
+
+      .room-wallpaper {
+        position: absolute;
+        inset: 0 0 46% 0;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.08) 0 12px,
+            rgba(255, 255, 255, 0.02) 12px 24px
+          ),
+          linear-gradient(180deg, #ffdceb, #f4c0d9);
+      }
+
+      .window {
+        position: absolute;
+        top: 9%;
+        left: 8%;
+        width: 18%;
+        height: 26%;
+        background: linear-gradient(180deg, #bcefff, #f8fdff);
+        border: 6px solid #fdf6d0;
+        box-shadow: inset 0 0 0 4px #8d6e9c;
+      }
+
+      .window::before,
+      .window::after {
+        content: "";
+        position: absolute;
+        background: #8d6e9c;
+      }
+
+      .window::before {
+        inset: 46% 0 auto 0;
+        height: 8%;
+      }
+
+      .window::after {
+        inset: 0 46% 0 auto;
+        width: 8%;
+      }
+
+      .bed {
+        position: absolute;
+        right: 6%;
+        bottom: 22%;
+        width: 33%;
+        height: 34%;
+        background:
+          linear-gradient(180deg, #fff4cf 0 18%, #e89abc 18% 38%, #d18cc8 38% 100%);
+        border: 6px solid #8d6e9c;
+      }
+
+      .bed::before {
+        content: "";
+        position: absolute;
+        width: 34%;
+        height: 34%;
+        top: 10%;
+        left: 8%;
+        background: #fff9ef;
+        border: 4px solid #8d6e9c;
+      }
+
+      .dresser {
+        position: absolute;
+        left: 34%;
+        bottom: 20%;
+        width: 20%;
+        height: 28%;
+        background: linear-gradient(180deg, #c38d5d, #8a5a35);
+        border: 6px solid #5b351d;
+      }
+
+      .dresser::before,
+      .dresser::after {
+        content: "";
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        height: 4px;
+        background: rgba(58, 28, 12, 0.5);
+      }
+
+      .dresser::before {
+        top: 36%;
+      }
+
+      .dresser::after {
+        top: 68%;
+      }
+
+      .rug {
+        position: absolute;
+        left: 20%;
+        right: 18%;
+        bottom: 6%;
+        height: 18%;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #fddbe8 0 12px,
+            #f7b6d0 12px 24px,
+            #ffefd6 24px 36px
+          );
+        border: 6px solid #8d6e9c;
+      }
+
+      .clean-item {
+        position: absolute;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        cursor: pointer;
+        transition:
+          transform 180ms steps(3),
+          opacity 180ms ease;
+      }
+
+      .clean-item:hover,
+      .clean-item:focus-visible {
+        transform: translateY(-3px) scale(1.03);
+        outline: none;
+      }
+
+      .clean-item.cleaned {
+        pointer-events: none;
+        animation: poof 460ms ease forwards;
+      }
+
+      .sprite {
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+        position: relative;
+      }
+
+      .sprite::before,
+      .sprite::after {
+        content: "";
+        position: absolute;
+      }
+
+      .bear {
+        background:
+          linear-gradient(180deg, #916344 0 32%, #754a2f 32% 100%);
+        border: 4px solid #402212;
+        box-shadow:
+          0 -10px 0 -2px #916344,
+          -10px -10px 0 -2px #916344,
+          10px -10px 0 -2px #916344;
+      }
+
+      .books {
+        background:
+          linear-gradient(180deg, #77c6ff 0 33%, #ff8db5 33% 66%, #f3c24f 66% 100%);
+        border: 4px solid #5b356f;
+      }
+
+      .laundry {
+        background:
+          radial-gradient(circle at 20% 35%, #ffeef6 0 28%, transparent 28%),
+          radial-gradient(circle at 52% 50%, #c7f0e1 0 32%, transparent 32%),
+          radial-gradient(circle at 74% 40%, #d9bdff 0 30%, transparent 30%),
+          linear-gradient(180deg, #f4bfd8, #c784a8);
+        border: 4px solid #7d517d;
+        border-radius: 20% 18% 16% 18%;
+      }
+
+      .block {
+        background:
+          linear-gradient(90deg, #ff8bb0 0 50%, #ffd36b 50% 100%);
+        border: 4px solid #6a3d59;
+      }
+
+      .shoes {
+        background:
+          radial-gradient(circle at 28% 52%, #523247 0 28%, transparent 28%),
+          radial-gradient(circle at 72% 52%, #523247 0 28%, transparent 28%),
+          linear-gradient(180deg, #eec4d8, #c88fb1);
+        border: 4px solid #7d517d;
+      }
+
+      .mug {
+        background: linear-gradient(180deg, #fff8ef, #f6d4d4);
+        border: 4px solid #7d517d;
+      }
+
+      .mug::after {
+        right: -10px;
+        top: 10px;
+        width: 14px;
+        height: 20px;
+        border: 4px solid #7d517d;
+        border-left: 0;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .blanket {
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #ffc5da 0 14px,
+            #ffe8ee 14px 28px
+          );
+        border: 4px solid #7d517d;
+      }
+
+      .trash {
+        background:
+          linear-gradient(180deg, #bcb9d1 0 18%, #8f90a7 18% 100%);
+        border: 4px solid #52556f;
+      }
+
+      .hair-stage {
+        display: grid;
+        gap: 18px;
+      }
+
+      .hair-board {
+        position: relative;
+        width: min(100%, 520px);
+        margin: 0 auto;
+        aspect-ratio: 1 / 1;
+        background:
+          radial-gradient(circle at 50% 10%, rgba(255, 252, 232, 0.6), transparent 24%),
+          linear-gradient(180deg, #f2d4ff, #b884d2);
+        border: 8px solid #fff4cf;
+        box-shadow: 0 0 0 8px rgba(132, 89, 154, 0.75);
+        overflow: hidden;
+      }
+
+      .hair-board::after {
+        content: "";
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 18%;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #d89f71 0 16px,
+            #b67a4f 16px 32px
+          );
+      }
+
+      .hair-portrait {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .hair-portrait img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .hair-fallback {
+        position: absolute;
+        inset: 0;
+        display: none;
+        place-items: center;
+        background:
+          radial-gradient(circle at 50% 32%, #ffeed9 0 16%, transparent 16%),
+          radial-gradient(circle at 50% 44%, #70465c 0 24%, transparent 24%),
+          linear-gradient(180deg, #f58de0, #a02f97);
+        color: var(--cream);
+        text-align: center;
+        padding: 16px;
+      }
+
+      .hair-board.missing .hair-fallback {
+        display: grid;
+      }
+
+      .hair-board.missing img {
+        display: none;
+      }
+
+      .award-mom .mom-fallback {
+        position: absolute;
+        inset: 0;
+        display: none;
+        place-items: center;
+        text-align: center;
+        color: var(--cream);
+        background:
+          radial-gradient(circle at 50% 30%, #ffdeef, transparent 24%),
+          linear-gradient(180deg, #f06dd8, #9f2a95);
+      }
+
+      .award-mom.missing .mom-fallback {
+        display: grid;
+      }
+
+      .award-mom.missing img {
+        display: none;
+      }
+
+      .braid {
+        position: absolute;
+        top: 14%;
+        z-index: 2;
+        width: 15%;
+        height: 58%;
+        border: 4px solid #31202d;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            #271822 0 12px,
+            #4e3442 12px 24px,
+            #271822 24px 36px
+          );
+        box-shadow:
+          inset 0 0 0 4px rgba(255, 222, 184, 0.05),
+          0 6px 0 rgba(33, 11, 28, 0.28);
+        touch-action: none;
+        cursor: grab;
+      }
+
+      .braid::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: -14px;
+        width: 46%;
+        height: 18px;
+        background: var(--rose);
+        border: 3px solid #5a2945;
+      }
+
+      .braid.dragging {
+        cursor: grabbing;
+        filter: drop-shadow(0 10px 8px rgba(40, 17, 30, 0.25));
+      }
+
+      .braid.cleared {
+        animation: float-away 520ms ease forwards;
+      }
+
+      .typing-wrap {
+        display: grid;
+        gap: 18px;
+      }
+
+      .word-card {
+        padding: 20px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.7);
+        box-shadow: 0 0 0 6px rgba(132, 89, 154, 0.75);
+      }
+
+      .word-display {
+        font-size: clamp(0.9rem, 3vw, 1.45rem);
+        line-height: 1.8;
+        color: #6e416f;
+      }
+
+      .typing-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+      }
+
+      .typing-input {
+        width: 100%;
+        min-height: 58px;
+        border: 0;
+        padding: 16px;
+        background: #fffdf8;
+        color: #53305f;
+        box-shadow: 0 0 0 6px rgba(132, 89, 154, 0.75);
+      }
+
+      .typing-input:focus {
+        outline: none;
+        box-shadow:
+          0 0 0 6px rgba(132, 89, 154, 0.75),
+          0 0 0 10px rgba(246, 203, 103, 0.45);
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 26px;
+        background: rgba(255, 255, 255, 0.75);
+        box-shadow: inset 0 0 0 4px rgba(132, 89, 154, 0.75);
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 0;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #ffd678 0 18px,
+            #ffb9ce 18px 36px
+          );
+        transition: width 240ms ease;
+      }
+
+      .feedback {
+        min-height: 2.2em;
+        color: #8b537e;
+      }
+
+      .award-stage {
+        position: relative;
+        min-height: 420px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .award-sky {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 50% 18%, rgba(255, 243, 180, 0.6), transparent 18%),
+          linear-gradient(180deg, #ff9ae8, #d83db2 58%, #6f1569);
+      }
+
+      .award-ground {
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 24%;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #90c77c 0 22px,
+            #7ab368 22px 44px
+          );
+      }
+
+      .award-mom {
+        position: absolute;
+        bottom: 17%;
+        left: -30%;
+        width: clamp(150px, 22vw, 220px);
+        aspect-ratio: 1 / 1;
+        background:
+          radial-gradient(circle at 50% 24%, rgba(255, 250, 220, 0.72), transparent 24%),
+          linear-gradient(180deg, #ffb2ec, #d843b7 62%, #8e1c7f);
+        border: 8px solid #fff4cf;
+        box-shadow: 0 0 0 8px rgba(132, 89, 154, 0.75);
+        overflow: hidden;
+        animation: walk-in 3s steps(18) forwards;
+      }
+
+      .award-mom img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        padding: 6px;
+        display: block;
+        image-rendering: pixelated;
+      }
+
+      .award-mom.cheer {
+        animation:
+          walk-in 3s steps(18) forwards,
+          cheer 780ms steps(2) 3.1s 3;
+      }
+
+      .award-badge {
+        position: absolute;
+        top: -42%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(72vw, 320px);
+        aspect-ratio: 1 / 1;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        color: #7b4e12;
+        padding: 24px;
+        background:
+          radial-gradient(circle at 40% 34%, rgba(255, 252, 219, 0.88), transparent 18%),
+          radial-gradient(circle, #ffeaa0 0 42%, #f6cb67 42% 66%, #d99c24 66% 100%);
+        clip-path: polygon(
+          50% 0%,
+          61% 15%,
+          78% 6%,
+          82% 24%,
+          100% 26%,
+          90% 42%,
+          100% 58%,
+          82% 60%,
+          78% 78%,
+          61% 69%,
+          50% 84%,
+          39% 69%,
+          22% 78%,
+          18% 60%,
+          0% 58%,
+          10% 42%,
+          0% 26%,
+          18% 24%,
+          22% 6%,
+          39% 15%
+        );
+        box-shadow:
+          0 0 0 8px rgba(255, 246, 204, 0.86),
+          0 0 0 14px rgba(179, 120, 20, 0.45);
+        animation: badge-drop 2.1s cubic-bezier(0.2, 0.72, 0.18, 1) 2.4s forwards;
+      }
+
+      .award-badge span {
+        font-size: clamp(0.95rem, 2.8vw, 1.6rem);
+        line-height: 1.7;
+      }
+
+      .credits-layout .mom-frame {
+        margin: 0 auto;
+        width: min(70vw, 240px);
+      }
+
+      .replay-btn {
+        justify-self: center;
+      }
+
+      .pixel-heart,
+      .pixel-sparkle,
+      .confetti {
+        position: absolute;
+        image-rendering: pixelated;
+        pointer-events: none;
+      }
+
+      .pixel-heart {
+        width: 14px;
+        height: 14px;
+        background:
+          radial-gradient(circle at 30% 30%, var(--pink) 0 42%, transparent 43%),
+          radial-gradient(circle at 70% 30%, var(--pink) 0 42%, transparent 43%),
+          linear-gradient(135deg, transparent 0 36%, var(--pink) 36% 100%),
+          linear-gradient(225deg, transparent 0 36%, var(--pink) 36% 100%);
+        transform: rotate(45deg);
+        opacity: 0.65;
+        animation: drift linear infinite;
+      }
+
+      .pixel-sparkle {
+        width: 12px;
+        height: 12px;
+        background:
+          linear-gradient(90deg, transparent 40%, #fff5ba 40% 60%, transparent 60%),
+          linear-gradient(180deg, transparent 40%, #fff5ba 40% 60%, transparent 60%);
+        filter: drop-shadow(0 0 4px rgba(255, 238, 150, 0.55));
+        animation: sparkle-pop 680ms ease forwards;
+      }
+
+      .star {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: #fff4cf;
+        box-shadow: 0 0 10px rgba(255, 243, 197, 0.72);
+        animation: twinkle steps(2) infinite;
+      }
+
+      .helper-note {
+        color: #7f4e7e;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      @keyframes twinkle {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.9;
+        }
+        50% {
+          transform: scale(2);
+          opacity: 0.45;
+        }
+      }
+
+      @keyframes drift {
+        from {
+          transform: translate3d(0, 120vh, 0) rotate(45deg);
+        }
+        to {
+          transform: translate3d(0, -20vh, 0) rotate(45deg);
+        }
+      }
+
+      @keyframes sparkle-pop {
+        0% {
+          transform: scale(0.4);
+          opacity: 0;
+        }
+        35% {
+          transform: scale(1.3);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(0.8) translateY(-18px);
+          opacity: 0;
+        }
+      }
+
+      @keyframes poof {
+        0% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(0.2) translateY(-12px);
+        }
+      }
+
+      @keyframes float-away {
+        0% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(120px) scale(0.6);
+        }
+      }
+
+      @keyframes walk-in {
+        0% {
+          left: -30%;
+        }
+        100% {
+          left: 50%;
+          transform: translateX(-50%);
+        }
+      }
+
+      @keyframes badge-drop {
+        0% {
+          top: -42%;
+          opacity: 0;
+        }
+        70% {
+          top: 18%;
+          opacity: 1;
+        }
+        84% {
+          top: 22%;
+        }
+        100% {
+          top: 20%;
+          opacity: 1;
+        }
+      }
+
+      @keyframes cheer {
+        0%,
+        100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        50% {
+          transform: translateX(-50%) translateY(-10px);
+        }
+      }
+
+      @media (max-width: 880px) {
+        .title-layout,
+        .split-layout,
+        .award-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .mom-frame {
+          width: min(100%, 300px);
+        }
+
+        .typing-row {
+          grid-template-columns: 1fr;
+        }
+
+        .pixel-btn {
+          width: 100%;
+        }
+
+        .award-stage {
+          min-height: 520px;
+        }
+
+        .award-badge {
+          top: -30%;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .screen {
+          padding-inline: 10px;
+        }
+
+        .panel {
+          padding: 16px;
+        }
+
+        .room-scene {
+          aspect-ratio: 4 / 5;
+        }
+
+        .award-mom {
+          bottom: 15%;
+          width: 160px;
+        }
+      }
+    </style>
+  </head>
+  <body class="fallback-cursor">
+    <div id="app">
+      <div class="sky-layer" id="skyLayer"></div>
+      <div class="float-layer" id="floatLayer"></div>
+      <div class="confetti-layer" id="confettiLayer"></div>
+      <main id="gameRoot" aria-live="polite"></main>
+    </div>
+
+    <script>
+      const gameState = {
+        currentScreen: "",
+        cleanedCount: 0,
+        totalCleanItems: 8,
+        hairCleared: 0,
+        totalBraids: 3,
+        typingWords: [
+          "Kindness",
+          "Patience",
+          "Love",
+          "Strength",
+          "We Love You Mama",
+          "Happy Mother's Day",
+        ],
+        typingIndex: 0,
+        typingTime: 90,
+        typingTimerId: null,
+        isAwaitingContinue: false,
+        activeCleanup: null,
+      };
+
+      const elements = {
+        app: document.getElementById("app"),
+        root: document.getElementById("gameRoot"),
+        skyLayer: document.getElementById("skyLayer"),
+        floatLayer: document.getElementById("floatLayer"),
+        confettiLayer: document.getElementById("confettiLayer"),
+      };
+
+      function init() {
+        createSky();
+        createFloaters();
+        setupCursorFallback();
+        showTitleScreen();
+      }
+
+      function setupCursorFallback() {
+        const cursorProbe = new Image();
+        cursorProbe.src = "assets/cursor.png";
+        cursorProbe.onload = () => document.body.classList.remove("fallback-cursor");
+      }
+
+      function clearTimers() {
+        if (gameState.typingTimerId) {
+          clearInterval(gameState.typingTimerId);
+          gameState.typingTimerId = null;
+        }
+      }
+
+      function runActiveCleanup() {
+        if (typeof gameState.activeCleanup === "function") {
+          gameState.activeCleanup();
+          gameState.activeCleanup = null;
+        }
+      }
+
+      function teardownContinue() {
+        gameState.isAwaitingContinue = false;
+        document.removeEventListener("keydown", handleContinueKey);
+      }
+
+      function handleContinueKey(event) {
+        if (event.code === "Space" || event.code === "Enter") {
+          event.preventDefault();
+          const activeContinue = document.querySelector("[data-continue-action]");
+          if (activeContinue) {
+            activeContinue.click();
+          }
+        }
+      }
+
+      function setContinueEnabled() {
+        teardownContinue();
+        gameState.isAwaitingContinue = true;
+        document.addEventListener("keydown", handleContinueKey);
+      }
+
+      function renderScreen(markup, onReady) {
+        teardownContinue();
+        clearTimers();
+        runActiveCleanup();
+        const outgoing = elements.root.querySelector(".screen");
+        const mountScreen = () => {
+          elements.root.innerHTML = markup;
+          const incoming = elements.root.querySelector(".screen");
+          requestAnimationFrame(() => incoming.classList.add("visible"));
+          hydrateMomImages(elements.root);
+          if (typeof onReady === "function") {
+            onReady();
+          }
+        };
+
+        if (outgoing) {
+          outgoing.classList.remove("visible");
+          window.setTimeout(mountScreen, 240);
+        } else {
+          mountScreen();
+        }
+      }
+
+      function hydrateMomImages(scope) {
+        scope.querySelectorAll("[data-mom-frame]").forEach((frame) => {
+          const img = frame.querySelector("img");
+          if (!img) {
+            return;
+          }
+          img.addEventListener("error", () => frame.classList.add("missing"), { once: true });
+          if (img.complete && img.naturalWidth === 0) {
+            frame.classList.add("missing");
+          }
+        });
+      }
+
+      function createMomFrame(className = "") {
+        return `
+          <div class="mom-frame ${className}" data-mom-frame>
+            <img src="assets/mom.png" alt="Portrait of Mom" />
+            <div class="mom-fallback">
+              <div>
+                <p>Place your portrait at</p>
+                <p><strong>assets/mom.png</strong></p>
+                <p>to see Mom throughout the adventure.</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function showTitleScreen() {
+        gameState.currentScreen = "title";
+        renderScreen(
+          `
+            <section class="screen">
+              <div class="panel title-layout">
+                <div class="copy-stack">
+                  <span class="kicker">Mother's Day Quest</span>
+                  <h1>A Special Mother's Day Adventure</h1>
+                  <p class="caption">Made with love by Mercedes ❤️</p>
+                  <p>
+                    A tiny journey full of care, gratitude, and the lessons that
+                    always stay with us.
+                  </p>
+                  <div class="cta-row">
+                    <button class="pixel-btn" id="startGameBtn">Press Start Mama</button>
+                  </div>
+                  <p class="helper-note">
+                    Desktop and mobile friendly. Tap, click, drag, and type your way
+                    through.
+                  </p>
+                </div>
+                <div class="mom-card">
+                  ${createMomFrame("")}
+                </div>
+              </div>
+            </section>
+          `,
+          () => {
+            document.getElementById("startGameBtn").addEventListener("click", () => {
+              showIntro(
+                "Let's tidy up the room like you always do for us.",
+                startCleaningGame
+              );
+            });
+          }
+        );
+      }
+
+      function showIntro(text, nextStep) {
+        gameState.currentScreen = "intro";
+        renderScreen(
+          `
+            <section class="screen">
+              <div class="panel split-layout">
+                <div class="copy-stack">
+                  <span class="kicker">A Little Moment</span>
+                  <h2>${text}</h2>
+                  <p>
+                    Press Space, Enter, or tap anywhere on the panel to continue.
+                  </p>
+                  <p class="continue-note">Press Space or Tap to Continue</p>
+                  <button class="pixel-btn hidden" data-continue-action>
+                    Continue
+                  </button>
+                </div>
+                <div class="portrait-stage">
+                  ${createMomFrame("")}
+                </div>
+              </div>
+            </section>
+          `,
+          () => {
+            const screen = elements.root.querySelector(".screen");
+            const continueButton = screen.querySelector("[data-continue-action]");
+            const continueGame = () => nextStep();
+            continueButton.addEventListener("click", continueGame, { once: true });
+            screen.addEventListener(
+              "pointerup",
+              (event) => {
+                if (event.target.closest(".pixel-btn")) {
+                  return;
+                }
+                continueButton.click();
+              },
+              { once: true }
+            );
+            setContinueEnabled();
+          }
+        );
+      }
+
+      function startCleaningGame() {
+        gameState.currentScreen = "cleaning";
+        gameState.cleanedCount = 0;
+        renderScreen(
+          `
+            <section class="screen">
+              <div class="panel">
+                <div class="hud">
+                  <div class="counter" id="cleanCounter">0 / 8 Cleaned</div>
+                  <div class="helper-pill">Tap or click each messy item</div>
+                </div>
+                <div class="scene-card">
+                  <div class="room-scene" id="roomScene">
+                    <div class="room-wallpaper"></div>
+                    <div class="window"></div>
+                    <div class="dresser"></div>
+                    <div class="bed"></div>
+                    <div class="rug"></div>
+
+                    ${renderCleanItem("bear", "Teddy bear", "left: 12%; bottom: 22%; width: 10%; height: 16%;")}
+                    ${renderCleanItem("books", "Books", "left: 42%; bottom: 48%; width: 10%; height: 9%;")}
+                    ${renderCleanItem("laundry", "Laundry pile", "left: 61%; bottom: 12%; width: 15%; height: 12%;")}
+                    ${renderCleanItem("block", "Toy block", "left: 32%; bottom: 12%; width: 8%; height: 8%;")}
+                    ${renderCleanItem("shoes", "Shoes", "left: 69%; bottom: 9%; width: 12%; height: 8%;")}
+                    ${renderCleanItem("mug", "Coffee mug", "left: 50%; bottom: 54%; width: 7%; height: 10%;")}
+                    ${renderCleanItem("blanket", "Blanket", "right: 12%; bottom: 32%; width: 16%; height: 12%;")}
+                    ${renderCleanItem("trash", "Trash", "left: 22%; bottom: 8%; width: 8%; height: 10%;")}
+                  </div>
+                </div>
+                <p class="message center" id="cleanMessage"></p>
+              </div>
+            </section>
+          `,
+          () => {
+            const counter = document.getElementById("cleanCounter");
+            const message = document.getElementById("cleanMessage");
+            const roomScene = document.getElementById("roomScene");
+            roomScene.querySelectorAll(".clean-item").forEach((item) => {
+              item.addEventListener("click", () => {
+                if (item.classList.contains("cleaned")) {
+                  return;
+                }
+                item.classList.add("cleaned");
+                gameState.cleanedCount += 1;
+                counter.textContent = `${gameState.cleanedCount} / ${gameState.totalCleanItems} Cleaned`;
+                spawnSparkles(item);
+                if (gameState.cleanedCount === gameState.totalCleanItems) {
+                  message.textContent = "You always make everything feel like home.";
+                  window.setTimeout(() => {
+                    showIntro(
+                      "Gently drag each braid to let your beautiful hair flow.",
+                      startHairGame
+                    );
+                  }, 1400);
+                }
+              });
+            });
+          }
+        );
+      }
+
+      function renderCleanItem(type, label, style) {
+        return `
+          <button class="clean-item" aria-label="${label}" style="${style}">
+            <span class="sprite ${type}"></span>
+          </button>
+        `;
+      }
+
+      function startHairGame() {
+        gameState.currentScreen = "hair";
+        gameState.hairCleared = 0;
+        renderScreen(
+          `
+            <section class="screen">
+              <div class="panel split-layout">
+                <div class="hair-stage">
+                  <div class="hud">
+                    <div class="counter" id="hairCounter">0 / 3 Braids Released</div>
+                    <div class="helper-pill">Drag each braid downward</div>
+                  </div>
+                  <div class="hair-board" id="hairBoard" data-mom-frame>
+                    <div class="hair-portrait">
+                      <img src="assets/mom.png" alt="Mom portrait for the hair game" />
+                    </div>
+                    <div class="hair-fallback">
+                      <p>Add <strong>assets/mom.png</strong> to reveal Mom's portrait here.</p>
+                    </div>
+                    <div class="braid" data-braid style="left: 18%;"></div>
+                    <div class="braid" data-braid style="left: 42%;"></div>
+                    <div class="braid" data-braid style="left: 66%;"></div>
+                  </div>
+                </div>
+                <div class="copy-stack">
+                  <span class="kicker">Mini-Game 2</span>
+                  <h2>Unbraid Mom's Hair</h2>
+                  <p>
+                    Pull each braid down until it releases. A gentle touch goes a
+                    long way.
+                  </p>
+                  <p class="message" id="hairMessage"></p>
+                </div>
+              </div>
+            </section>
+          `,
+          () => {
+            setupHairDrag();
+          }
+        );
+      }
+
+      function setupHairDrag() {
+        const board = document.getElementById("hairBoard");
+        const counter = document.getElementById("hairCounter");
+        const message = document.getElementById("hairMessage");
+        const braids = Array.from(board.querySelectorAll("[data-braid]"));
+        let activeDrag = null;
+
+        const updateDrag = (clientY) => {
+          if (!activeDrag) {
+            return;
+          }
+          const delta = Math.max(0, clientY - activeDrag.startY);
+          const percent = (delta / activeDrag.rect.height) * 100;
+          activeDrag.braid.style.transform = `translateY(${delta}px)`;
+          activeDrag.braid.style.top = `${activeDrag.originalTop + percent * 0.18}%`;
+        };
+
+        const finishDrag = (clientY) => {
+          if (!activeDrag) {
+            return;
+          }
+
+          const { braid, rect, startY, originalTop } = activeDrag;
+          const delta = Math.max(0, clientY - startY);
+          braid.classList.remove("dragging");
+
+          if (delta > rect.height * 0.22) {
+            braid.classList.add("cleared");
+            spawnSparkles(braid, 10);
+            gameState.hairCleared += 1;
+            counter.textContent = `${gameState.hairCleared} / ${gameState.totalBraids} Braids Released`;
+            window.setTimeout(() => braid.remove(), 480);
+            if (gameState.hairCleared === gameState.totalBraids) {
+              message.textContent = "Beautiful inside and out.";
+              window.setTimeout(() => {
+                showIntro(
+                  "Type the loving words you've taught us all these years.",
+                  startTypingGame
+                );
+              }, 1400);
+            }
+          } else {
+            braid.style.transform = "";
+            braid.style.top = `${originalTop}%`;
+          }
+
+          activeDrag = null;
+        };
+
+        const handlePointerMove = (event) => {
+          updateDrag(event.clientY);
+        };
+
+        const handlePointerUp = (event) => {
+          finishDrag(event.clientY);
+        };
+
+        window.addEventListener("pointermove", handlePointerMove);
+        window.addEventListener("pointerup", handlePointerUp);
+        window.addEventListener("pointercancel", handlePointerUp);
+        gameState.activeCleanup = () => {
+          window.removeEventListener("pointermove", handlePointerMove);
+          window.removeEventListener("pointerup", handlePointerUp);
+          window.removeEventListener("pointercancel", handlePointerUp);
+        };
+
+        braids.forEach((braid) => {
+          const startDrag = (event) => {
+            if (braid.classList.contains("cleared") || activeDrag) {
+              return;
+            }
+            event.preventDefault();
+            braid.classList.add("dragging");
+            activeDrag = {
+              braid,
+              rect: board.getBoundingClientRect(),
+              startY: event.clientY,
+              originalTop: parseFloat(braid.dataset.baseTop || 14),
+            };
+          };
+
+          braid.dataset.baseTop = "14";
+          braid.addEventListener("pointerdown", startDrag);
+        });
+      }
+
+      function startTypingGame() {
+        gameState.currentScreen = "typing";
+        gameState.typingIndex = 0;
+        gameState.typingTime = 90;
+        renderScreen(
+          `
+            <section class="screen">
+              <div class="panel split-layout">
+                <div class="typing-wrap">
+                  <div class="hud">
+                    <div class="counter" id="typingCounter">1 / ${gameState.typingWords.length} Words</div>
+                    <div class="timer" id="typingTimer">90 Seconds Left</div>
+                  </div>
+                  <div class="word-card">
+                    <p class="word-display" id="wordDisplay"></p>
+                  </div>
+                  <div class="typing-row">
+                    <input
+                      class="typing-input"
+                      id="typingInput"
+                      type="text"
+                      autocomplete="off"
+                      autocapitalize="words"
+                      spellcheck="false"
+                      placeholder="Type the words here"
+                      aria-label="Type the displayed words"
+                    />
+                    <button class="pixel-btn" id="submitWordBtn">Submit</button>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                  </div>
+                  <p class="feedback center" id="typingFeedback"></p>
+                </div>
+                <div class="copy-stack">
+                  <span class="kicker">Mini-Game 3</span>
+                  <h2>Teaching Words</h2>
+                  <p>
+                    Finish all the words before the timer runs out. Each correct
+                    answer brings another thank you.
+                  </p>
+                  <p class="message" id="typingMessage"></p>
+                </div>
+              </div>
+            </section>
+          `,
+          () => {
+            setupTypingGame();
+          }
+        );
+      }
+
+      function setupTypingGame() {
+        const wordDisplay = document.getElementById("wordDisplay");
+        const typingInput = document.getElementById("typingInput");
+        const submitWordBtn = document.getElementById("submitWordBtn");
+        const typingCounter = document.getElementById("typingCounter");
+        const typingTimer = document.getElementById("typingTimer");
+        const typingFeedback = document.getElementById("typingFeedback");
+        const typingMessage = document.getElementById("typingMessage");
+        const progressFill = document.getElementById("progressFill");
+        const encouragements = [
+          "That lesson still shines.",
+          "Exactly right.",
+          "You taught that with patience.",
+          "Another beautiful truth.",
+          "So much heart in those words.",
+          "Perfect.",
+        ];
+
+        const updateWord = () => {
+          wordDisplay.textContent = gameState.typingWords[gameState.typingIndex];
+          typingCounter.textContent = `${gameState.typingIndex + 1} / ${gameState.typingWords.length} Words`;
+          progressFill.style.width = `${(gameState.typingIndex / gameState.typingWords.length) * 100}%`;
+        };
+
+        const completeTypingGame = () => {
+          clearTimers();
+          progressFill.style.width = "100%";
+          typingMessage.textContent = "Thank you for teaching us with love every day.";
+          typingFeedback.textContent = "Every word feels like home.";
+          typingInput.disabled = true;
+          submitWordBtn.disabled = true;
+          window.setTimeout(showAwardScreen, 1600);
+        };
+
+        const submitAttempt = () => {
+          const expected = gameState.typingWords[gameState.typingIndex];
+          const attempt = typingInput.value.trim();
+          if (!attempt) {
+            typingFeedback.textContent = "Start typing the loving words first.";
+            return;
+          }
+          if (attempt.toLowerCase() === expected.toLowerCase()) {
+            typingFeedback.textContent =
+              encouragements[Math.min(gameState.typingIndex, encouragements.length - 1)];
+            gameState.typingIndex += 1;
+            typingInput.value = "";
+            if (gameState.typingIndex >= gameState.typingWords.length) {
+              completeTypingGame();
+            } else {
+              updateWord();
+            }
+          } else {
+            typingFeedback.textContent = "Almost. Try the words exactly as shown.";
+          }
+        };
+
+        submitWordBtn.addEventListener("click", submitAttempt);
+        typingInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            submitAttempt();
+          }
+        });
+
+        updateWord();
+        typingInput.focus();
+
+        gameState.typingTimerId = window.setInterval(() => {
+          gameState.typingTime -= 1;
+          typingTimer.textContent = `${gameState.typingTime} Seconds Left`;
+          if (gameState.typingTime <= 0) {
+            clearTimers();
+            typingFeedback.textContent = "Time's up, but love keeps going. Let's try that word again.";
+            gameState.typingTime = 25;
+            typingTimer.textContent = `${gameState.typingTime} Bonus Seconds`;
+            gameState.typingTimerId = window.setInterval(() => {
+              gameState.typingTime -= 1;
+              typingTimer.textContent = `${gameState.typingTime} Bonus Seconds`;
+              if (gameState.typingTime <= 0) {
+                clearTimers();
+                completeTypingGame();
+              }
+            }, 1000);
+          }
+        }, 1000);
+      }
+
+      function showAwardScreen() {
+        gameState.currentScreen = "award";
+        renderScreen(
+          `
+            <section class="screen">
+              <div class="panel award-layout">
+                <div class="award-stage" id="awardStage">
+                  <div class="award-sky"></div>
+                  <div class="award-ground"></div>
+                  <div class="award-mom cheer" data-mom-frame>
+                    <img src="assets/mom.png" alt="Mom portrait receiving an award" />
+                    <div class="mom-fallback">
+                      <div>
+                        <p>Best Mom Ever</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="award-badge">
+                    <span>BEST MOM EVER</span>
+                  </div>
+                </div>
+                <div class="copy-stack">
+                  <span class="kicker">Award Ceremony</span>
+                  <h2>Thank you for your love, strength, and endless support.</h2>
+                  <p>
+                    Every small act of care becomes a whole world for the people you
+                    love.
+                  </p>
+                  <div class="cta-row">
+                    <button class="pixel-btn" id="awardContinueBtn">See Credits</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          `,
+          () => {
+            launchConfetti();
+            const continueButton = document.getElementById("awardContinueBtn");
+            window.setTimeout(() => continueButton.focus(), 2800);
+            continueButton.addEventListener("click", showCredits);
+          }
+        );
+      }
+
+      function showCredits() {
+        gameState.currentScreen = "credits";
+        renderScreen(
+          `
+            <section class="screen">
+              <div class="panel credits-layout">
+                <span class="kicker">Credits</span>
+                <h2>Your amazing, favorite, funny, lovely first born — Mercedes ❤️</h2>
+                <p>Happy Mother's Day</p>
+                <div class="portrait-stage">
+                  ${createMomFrame("")}
+                </div>
+                <div class="cta-row replay-btn">
+                  <button class="pixel-btn" id="replayBtn">Replay Adventure</button>
+                </div>
+              </div>
+            </section>
+          `,
+          () => {
+            document.getElementById("replayBtn").addEventListener("click", showTitleScreen);
+          }
+        );
+      }
+
+      function spawnSparkles(target, amount = 6) {
+        const hostRect = elements.app.getBoundingClientRect();
+        const rect = target.getBoundingClientRect();
+        for (let index = 0; index < amount; index += 1) {
+          const sparkle = document.createElement("div");
+          sparkle.className = "pixel-sparkle";
+          sparkle.style.left = `${rect.left - hostRect.left + rect.width * (0.15 + Math.random() * 0.7)}px`;
+          sparkle.style.top = `${rect.top - hostRect.top + rect.height * (0.15 + Math.random() * 0.7)}px`;
+          sparkle.style.animationDelay = `${index * 30}ms`;
+          elements.floatLayer.appendChild(sparkle);
+          window.setTimeout(() => sparkle.remove(), 720);
+        }
+      }
+
+      function createSky() {
+        const count = 52;
+        for (let index = 0; index < count; index += 1) {
+          const star = document.createElement("div");
+          star.className = "star";
+          const size = Math.random() > 0.7 ? 6 : 4;
+          star.style.width = `${size}px`;
+          star.style.height = `${size}px`;
+          star.style.left = `${Math.random() * 100}%`;
+          star.style.top = `${Math.random() * 100}%`;
+          star.style.animationDuration = `${1.4 + Math.random() * 2.2}s`;
+          star.style.animationDelay = `${Math.random() * 2}s`;
+          elements.skyLayer.appendChild(star);
+        }
+      }
+
+      function createFloaters() {
+        const totalHearts = 18;
+        for (let index = 0; index < totalHearts; index += 1) {
+          const heart = document.createElement("div");
+          heart.className = "pixel-heart";
+          heart.style.left = `${Math.random() * 100}%`;
+          heart.style.animationDuration = `${10 + Math.random() * 10}s`;
+          heart.style.animationDelay = `${Math.random() * 10}s`;
+          heart.style.opacity = `${0.3 + Math.random() * 0.45}`;
+          elements.floatLayer.appendChild(heart);
+        }
+      }
+
+      function launchConfetti() {
+        elements.confettiLayer.innerHTML = "";
+        for (let index = 0; index < 70; index += 1) {
+          const bit = document.createElement("div");
+          bit.className = "confetti";
+          const colors = ["#ffd56f", "#ff8cb5", "#fff3c5", "#d9b6ff", "#bff3db"];
+          bit.style.left = `${Math.random() * 100}%`;
+          bit.style.top = `${-10 - Math.random() * 40}px`;
+          bit.style.width = `${6 + Math.random() * 8}px`;
+          bit.style.height = `${8 + Math.random() * 14}px`;
+          bit.style.background = colors[index % colors.length];
+          bit.style.opacity = "0.95";
+          bit.animate(
+            [
+              { transform: "translate3d(0,0,0) rotate(0deg)", opacity: 0 },
+              { opacity: 1, offset: 0.1 },
+              {
+                transform: `translate3d(${Math.random() * 180 - 90}px, ${420 + Math.random() * 180}px, 0) rotate(${Math.random() * 420}deg)`,
+                opacity: 1,
+              },
+              { opacity: 0.2 },
+            ],
+            {
+              duration: 2600 + Math.random() * 1800,
+              delay: Math.random() * 700,
+              easing: "cubic-bezier(.23,.67,.2,1)",
+            }
+          );
+          elements.confettiLayer.appendChild(bit);
+          window.setTimeout(() => bit.remove(), 4700);
+        }
+      }
+
+      window.addEventListener("beforeunload", clearTimers);
+      init();
+    </script>
+  </body>
+</html>
